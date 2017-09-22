@@ -56,7 +56,7 @@ class Trace(object):
             stop = time.time()
             send.close()
             recv.close()
-        # Use round to probihibt float shenanigans
+        # Use round to improve float readability
         duration = round(((stop - start) * 1000), 2)
         return address, duration, resp_type, resp_code
 
@@ -97,21 +97,24 @@ class Trace(object):
         hops = {}
         for i in range(1, 30):
             hop, duration, resp_type, resp_code = self._ping(ttl, ip)
-            message = None
-            if hop and resp_type != 0:
+            if hop:
                 hops[duration] = hop
-                message = "{hop}\t| ttl: {ttl} \t| {time} ms".format(
+                logging.info("{hop}\t| ttl: {ttl} \t| {time} ms".format(
                     hop=hop, ttl=ttl, time=duration)
-            if message is not None:
-                logging.info(message)
-                logging.debug("ICMP response type/code: {type}/{code}".format(
-                    type=resp_type,
-                    code=resp_code)
+                )
+                logging.debug(
+                    "ICMP response type/code: {type}/{code}".format(
+                        type=resp_type,
+                        code=resp_code
+                    )
                 )
             ttl += 1
             if hop == ip or all([resp_type, resp_code]) == 3:
-                # ICMP port unreachable (3/3) indicates we've reached the end.
-                # Alternatively host might match target.
+                """
+                ICMP port unreachable (3/3) is used to indicate we've reached
+                the last hop in our trace.
+                Alternatively exit if the host matches our target.
+                """
                 logging.debug("- - - finished traceroute. - - -")
                 break
         slowest_time = sorted(hops.iterkeys())[len(hops.keys()) - 1]
