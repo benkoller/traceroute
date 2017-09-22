@@ -20,7 +20,7 @@ class Trace(object):
 
     def __init__(self):
         """Provide sockets in class-scope to save sockets."""
-        self._port = 34321
+        self._port = 33434
         self._timeout = 1
 
     def _get_sockets(self):
@@ -57,7 +57,7 @@ class Trace(object):
             send.close()
             recv.close()
         # Use round to probihibt float shenanigans
-        duration = round(((stop - start) * 1000), 5)
+        duration = round(((stop - start) * 1000), 2)
         return address, duration, resp_type, resp_code
 
     def _get_ip(self, target):
@@ -80,12 +80,11 @@ class Trace(object):
 
         To use this you'll need to pass a valid IP or resolvable hostname.
 
-        Example use from the CLI:
+        Example use from the CLI (asuming you're root):
             ./tracert.py traceroute 8.8.8.8
             ./tracert.py traceroute google.com
 
         TODO:
-            * debug falsely reported last / slowest hop
             * nicer outputs
             * copy more functionality of the UNIX traceroute
         """
@@ -96,17 +95,24 @@ class Trace(object):
         )
         ttl = 1
         hops = {}
-        for i in range(1, 50):
+        for i in range(1, 30):
             hop, duration, resp_type, resp_code = self._ping(ttl, ip)
             message = None
-            if hop:
+            if hop and resp_type != 0:
                 hops[duration] = hop
-                message = "{hop} \t| ttl: {ttl} \t| {time} ms".format(
+                message = "{hop}\t| ttl: {ttl} \t| {time} ms".format(
                     hop=hop, ttl=ttl, time=duration)
             if message is not None:
                 logging.info(message)
+                logging.debug("ICMP response type/code: {type}/{code}".format(
+                    type=resp_type,
+                    code=resp_code)
+                )
             ttl += 1
-            if hop == ip:
+            if hop == ip or all([resp_type, resp_code]) == 3:
+                # ICMP port unreachable (3/3) indicates we've reached the end.
+                # Alternatively host might match target.
+                logging.debug("- - - finished traceroute. - - -")
                 break
         slowest_time = sorted(hops.iterkeys())[len(hops.keys()) - 1]
         slowest_hop = hops[slowest_time]
