@@ -29,7 +29,7 @@ tracer = Trace()
 slowest_hop, rtt = tracer.traceroute("192.168.178.73")
 ```
 
-## Caveats / Todos / Issues
+## Caveats
 
-- Work around `sudo`-requirement
-- Implement more traceroute features
+- `sudo` is required
+- A lot of standard UNIX `traceroute` functionality is missing
