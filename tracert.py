@@ -19,7 +19,6 @@ class Trace(object):
     """Display the route and transit delays for ICMP packets over a network."""
 
     def __init__(self):
-        """Provide sockets in class-scope to save sockets."""
         self._port = 33434
         self._timeout = 1
 
