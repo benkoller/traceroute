@@ -6,7 +6,7 @@ A home brewed implementation of traceroute in python using sockets.
 
 This project uses google's [python-fire](https://github.com/google/python-fire) for ease of use. Please make sure to install the requirements via `pip install -r requirements.txt` beforehand.
 
-**NOTE**: Due to `socket` being used this has to be run with elevated privileges.
+**NOTE**: Due to `socket` being used this has to be run with elevated privileges (e.g `sudo`).
 
 To use it as cli:
 ```
